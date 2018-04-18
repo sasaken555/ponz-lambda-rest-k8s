@@ -1,0 +1,25 @@
+{
+  "name": "ponz-lambda-rest-k8s",
+  "version": "1.0.0",
+  "description": "Request REST API to kubeapi-server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sasaken555/ponz-lambda-rest-k8s.git"
+  },
+  "keywords": [
+    "Kubernetes"
+  ],
+  "author": "sasaken555",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sasaken555/ponz-lambda-rest-k8s/issues"
+  },
+  "homepage": "https://github.com/sasaken555/ponz-lambda-rest-k8s#readme",
+  "dependencies": {
+    "axios": "^0.18.0"
+  }
+}
