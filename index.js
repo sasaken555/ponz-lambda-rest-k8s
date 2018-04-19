@@ -22,8 +22,10 @@ exports.deployK8sDef = (event, context, callback) => {
 }
 
 // exports.deployK8sDef = (namespace) => {
+//   // 非同期で実行されるため、順不同で表示される
 //   checkApi()
-//     .then(getDeployments(namespace));
+//     .then(getDeployments(namespace))
+//     .then(getServices(namespace));
 // }
 
 const axiosInstance = axios.create({
@@ -72,7 +74,17 @@ async function getDeployments(namespace) {
  * @param {String} namespace 名前空間
  */
 function getServices(namespace) {
-  // some code here
+  console.log('Get Services List...');
+  return axiosInstance
+          .get(`/api/v1/namespaces/${namespace}/services`)
+          .then((res) => {
+            console.log('Services List...');
+            console.log(`Status: ${res.status} ${res.statusText}`);
+
+            res.data.items.forEach((serviceItem, index, array) => {
+              console.log(`Name: ${serviceItem.metadata.name}, Type: ${serviceItem.spec.type}, PortMappings: port:${serviceItem.spec.ports[0].port}-targetPort:${serviceItem.spec.ports[0].targetPort}`);
+            });
+          });
 }
 
 /**
