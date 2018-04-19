@@ -21,20 +21,50 @@ exports.deployK8sDef = (event, context, callback) => {
   // Deploy Code here...
 }
 
+// exports.deployK8sDef = (namespace) => {
+//   checkApi()
+//     .then(getDeployments(namespace));
+// }
+
+const axiosInstance = axios.create({
+  baseURL: KUBE_BASE_URI,
+  headers: {
+    'Authorization': `Bearer ${KUBE_AUTH_TOKEN}`
+  },
+  httpsAgent: new https.Agent({
+    'rejectUnauthorized': false
+  })
+});
+
 /**
- * 登録済みのKubernetesオブジェクトを列挙する
- * @param {String} namespace 
+ * APIのヘルスチェック
  */
-function listExistingK8sObj(namespace) {
-  // some code here
+async function checkApi() {
+  console.log('Check API...');
+  return axiosInstance.get('/api')
+          .then((res) => {
+            console.log('API Info...');
+            console.log(`Status: ${res.status} ${res.statusText}`);
+            console.log(JSON.stringify(res.data));
+          });
 }
 
 /**
  * Deployment一覧を取得する
- * @param {String} namespace 
+ * @param {String} namespace 名前空間
  */
-function getDeployments(namespace) {
-  // some code here
+async function getDeployments(namespace) {
+  console.log('Get Deployment List...');
+  return axiosInstance
+          .get(`/apis/apps/v1/namespaces/${namespace}/deployments`)
+          .then((res) => {
+            console.log('Deployment List...');
+            console.log(`Status: ${res.status} ${res.statusText}`);
+
+            res.data.items.forEach((deployItem, index, array) => {
+              console.log(`Name: ${deployItem.metadata.name}, Desired: ${deployItem.status.replicas}, Available: ${deployItem.status.availableReplicas}`);
+            });
+          });
 }
 
 /**
