@@ -113,7 +113,7 @@ function createService(namespace, manifest) {
 function deleteDeployment(namespace, obj_name) {
   console.log('Delete Deployments List...');
   return axiosInstance
-          .delete(`/api/v1/namespaces/${namespace}/services`)
+          .delete(`/api/v1/namespaces/${namespace}/deployments/${obj_name}`)
           .then((res) => {
             console.log('Deployments List...');
             console.log(`Status: ${res.status} ${res.statusText}`);
@@ -131,7 +131,7 @@ function deleteDeployment(namespace, obj_name) {
 function deleteService(namespace, obj_name) {
   console.log('Delete Services List...');
   return axiosInstance
-          .delete(`/api/v1/namespaces/${namespace}/services`)
+          .delete(`/api/v1/namespaces/${namespace}/services/${obj_name}`)
           .then((res) => {
             console.log('Services List...');
             console.log(`Status: ${res.status} ${res.statusText}`);
