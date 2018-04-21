@@ -111,8 +111,17 @@ function createService(namespace, manifest) {
  * @param {String} obj_name Deployment名
  */
 function deleteDeployment(namespace, obj_name) {
-  // some code here
-}
+  console.log('Delete Deployments List...');
+  return axiosInstance
+          .delete(`/api/v1/namespaces/${namespace}/services`)
+          .then((res) => {
+            console.log('Deployments List...');
+            console.log(`Status: ${res.status} ${res.statusText}`);
+
+            res.data.items.forEach((deployItem, index, array) => {
+              console.log(`Name: ${deployItem.metadata.name}, Desired: ${deployItem.status.replicas}, Available: ${deployItem.status.availableReplicas}`);
+            });
+          });}
 
 /**
  * Serviceを削除する
@@ -120,5 +129,15 @@ function deleteDeployment(namespace, obj_name) {
  * @param {String} obj_name Service名
  */
 function deleteService(namespace, obj_name) {
-  // some code here
-}
+  console.log('Delete Services List...');
+  return axiosInstance
+          .delete(`/api/v1/namespaces/${namespace}/services`)
+          .then((res) => {
+            console.log('Services List...');
+            console.log(`Status: ${res.status} ${res.statusText}`);
+
+            res.data.items.forEach((serviceItem, index, array) => {
+              console.log(`Name: ${serviceItem.metadata.name}, Type: ${serviceItem.spec.type}, PortMappings: port:${serviceItem.spec.ports[0].port}-targetPort:${serviceItem.spec.ports[0].targetPort}`);
+            });
+          });
+  }
