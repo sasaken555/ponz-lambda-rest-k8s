@@ -7,6 +7,7 @@
 const axios = require('axios');
 const AWS = require('aws-sdk');
 const yaml = require('js-yaml');
+const https = require('https');
 
 // 定数
 const KUBE_BASE_URI = process.env.AWS_K8S_APISERVER;
@@ -24,6 +25,8 @@ const s3 = new AWS.S3({ params: { Bucket: S3_KUBE_BUCKET, Region: S3_KUBE_REGION
  */
 exports.deployK8sDef = (event, context, callback) => {
   // Deploy Code here...
+  const namespace = 'default';
+  const obj_name = 'sasaken-node-test';
   checkApi()
   .then(getDeployments(namespace))
   .then(getServices(namespace))
@@ -31,6 +34,8 @@ exports.deployK8sDef = (event, context, callback) => {
   .then(deleteService(namespace, obj_name))
   .then(createDeployment(namespace))
   .then(createService(namespace));
+
+  callback(null, 'Deploy Completed!!');
 }
 
 // exports.deployK8sDef = async (namespace, obj_name) => {
