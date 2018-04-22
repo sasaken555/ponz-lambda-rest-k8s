@@ -11,8 +11,8 @@ const yaml = require('js-yaml');
 // 定数
 const KUBE_BASE_URI = process.env.AWS_K8S_APISERVER;
 const KUBE_AUTH_TOKEN = process.env.AWS_K8S_TOKEN;
-const S3_KUBE_BUCKET = 'codepipeline-ap-northeast-1-208341755624';
-const S3_KUBE_REGION = 'ap-northeast-1';
+const S3_KUBE_BUCKET = process.env.AWS_KUBE_BUCKET;
+const S3_KUBE_REGION = process.env.AWS_KUBE_REGION;
 const s3 = new AWS.S3({ params: { Bucket: S3_KUBE_BUCKET, Region: S3_KUBE_REGION } });
 
 /**
