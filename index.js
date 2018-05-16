@@ -12,9 +12,12 @@ const https = require('https');
 // 定数
 const KUBE_BASE_URI = process.env.AWS_K8S_APISERVER;
 const KUBE_AUTH_TOKEN = process.env.AWS_K8S_TOKEN;
+const KUBE_OBJ_LABEL = process.env.AWS_K8S_OBJ_LABEL;
+const KUBE_NS = process.env.AWS_K8S_NS;
 const S3_KUBE_BUCKET = process.env.AWS_KUBE_BUCKET;
 const S3_KUBE_REGION = process.env.AWS_KUBE_REGION;
 const s3 = new AWS.S3({ params: { Bucket: S3_KUBE_BUCKET, Region: S3_KUBE_REGION } });
+const codepipeline = new AWS.CodePipeline();
 
 /**
  * デプロイ関数本体
@@ -27,27 +30,64 @@ exports.deployK8sDef = (event, context, callback) => {
   // Deploy Code here...
   const namespace = 'default';
   const obj_name = 'sasaken-node-test';
-  checkApi()
-  .then(getDeployments(namespace))
-  .then(getServices(namespace))
-  .then(deleteDeployment(namespace, obj_name))
-  .then(deleteService(namespace, obj_name))
-  .then(createDeployment(namespace))
-  .then(createService(namespace));
+  const jobId = event["CodePipeline.job"].id;
+  const SUCCESS_MSG = "Deploy Succeeded!!"
 
-  callback(null, 'Deploy Completed!!');
+  checkApi()
+    .then(getDeployments(KUBE_NS))
+    .then(getServices(KUBE_NS))
+    .then(deleteDeployment(KUBE_NS, KUBE_OBJ_LABEL))
+    .then(deleteService(KUBE_NS, KUBE_OBJ_LABEL))
+    .then(createDeployment(KUBE_NS))
+    .then(createService(KUBE_NS))
+    .then(putJobSuccess(jobId, SUCCESS_MSG, context))
+    .catch(err => putJobFailure(jobId, err, context));
 }
 
-// exports.deployK8sDef = async (namespace, obj_name) => {
-//   // 非同期で実行されるため、順不同で表示される?
-//   checkApi()
-//     .then(getDeployments(namespace))
-//     .then(getServices(namespace))
-//     .then(deleteDeployment(namespace, obj_name))
-//     .then(deleteService(namespace, obj_name))
-//     .then(createDeployment(namespace))
-//     .then(createService(namespace));
-// }
+
+/**
+ * AWS CodePipeline に正常終了を通知する
+ * @param {String} jobId CodePipelineジョブ情報
+ * @param {String} message 正常終了メッセージ
+ * @param {Object} context LambdaのContextオブジェクト
+ */
+function putJobSuccess(jobId, message, context) {
+  const params = {
+    jobId: jobId
+  };
+
+  codepipeline.putJobSuccessResult(params, (err, data) => {
+    if (err) {
+      // パラメータ不正の場合は、異常終了させる...
+      context.fail(err);
+    } else {
+      context.succeed(message);
+    }
+  });
+}
+
+/**
+ * AWS CodePipeline に異常終了を通知する
+ * @param {String} jobId CodePipelineジョブ情報
+ * @param {String} message 異常終了メッセージ
+ * @param {Object} context LambdaのContextオブジェクト
+ */
+function putJobFailure(jobId, message, context) {
+  const params = {
+    jobId: jobId,
+    failureDetails: {
+      message: JSON.stringify(message),
+      type: 'JobFailed',
+      externalExecutionId: context.invokeid
+    }
+  };
+
+  codepipeline.putJobFailureResult(params, (err, data) => {
+    // 異常終了させる...
+    context.fail(message);
+  });
+}
+
 
 const axiosInstance = axios.create({
   baseURL: KUBE_BASE_URI,
@@ -60,7 +100,7 @@ const axiosInstance = axios.create({
 });
 
 /**
- * APIのヘルスチェック
+ * Kubernetes APIのヘルスチェック
  */
 async function checkApi() {
   console.log('Check API...');
