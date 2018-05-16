@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/sasaken555/ponz-lambda-rest-k8s#readme",
   "dependencies": {
-    "aws-sdk": "^2.226.1",
+    "aws-sdk": "^2.240.1",
     "axios": "^0.18.0",
     "js-yaml": "^3.11.0"
   }
